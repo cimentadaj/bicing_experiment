@@ -20,16 +20,22 @@ library(tidyverse)
 #   map_lgl(~ grepl("bic", .x)) %>%
 #   data_names[.]
 
+wd <- "/Users/cimentadaj/Downloads/gitrepo/bicing_experiment"
+file_path <- file.path(wd, "bicing.rds")
+
+main_data <- read_rds(file_path)
+
 test_url <-
   paste0(
     "http://opendata-ajuntament.barcelona.cat/data/api/3/action/resource_search?query=name:",
     "bicing"
     )
 
-
+# Repeat every minute for 3 hours
+repeat_length <- 60 * 3
 
 iterative_bicing <-
-  map(1:5, ~ {
+  map_dfr(seq_len(repeat_length), ~ {
   test_bike <- GET(test_url)
   # I think dataset codes are under "code"
   
@@ -46,6 +52,18 @@ iterative_bicing <-
     filter(id == 379) %>%
     mutate(time = lubridate::now())
   
-  Sys.sleep(5)
+  Sys.sleep(60)
   bicing
 })
+
+binded_data <-
+  bind_rows(main_data, iterative_bicing)
+
+write_rds(binded_data, file_path)
+
+# # 6 hours a days gives 360 rows by 30 days
+# (60 * 6) * 30
+# 
+# # A df with 11k rows is only 0.4 MB, so you can store it on github
+# 
+# df_large <- map_dfr(1:131400, ~ iterative_bicing[1, ])
