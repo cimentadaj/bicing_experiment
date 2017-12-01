@@ -1,5 +1,7 @@
 #! /bin/bash
 
+ssh-add /Users/cimentadaj/.ssh/cimentadaj-GitHub.pub
+
 cd /Users/cimentadaj/Downloads/gitrepo/bicing_experiment
 
 /usr/local/bin/RScript /Users/cimentadaj/Downloads/gitrepo/bicing_experiment/scrape_bicing.R
