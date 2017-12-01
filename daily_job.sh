@@ -1,6 +1,6 @@
 #! /bin/bash
 
-ssh-add /Users/cimentadaj/.ssh/cimentadaj-GitHub
+ssh-add /Users/cimentadaj/.ssh/cimentadaj-GitHub.pub
 
 cd /Users/cimentadaj/Downloads/gitrepo/bicing_experiment
 
