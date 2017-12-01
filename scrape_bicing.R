@@ -20,6 +20,13 @@ library(tidyverse)
 #   map_lgl(~ grepl("bic", .x)) %>%
 #   data_names[.]
 
+# For how to package an api
+# http://conjugateprior.org/2017/06/packaging-the-twfy-api/
+
+# to give permission to run scrap
+# chmod +x daily_job.sh
+# chmod +x scrape_bicing.R
+
 wd <- "/Users/cimentadaj/Downloads/gitrepo/bicing_experiment"
 file_path <- file.path(wd, "bicing.rds")
 
@@ -32,7 +39,7 @@ test_url <-
     )
 
 # Repeat every minute for 3 hours
-repeat_length <- 60 * 3
+repeat_length <- 10
 
 iterative_bicing <-
   map_dfr(seq_len(repeat_length), ~ {
