@@ -1,6 +1,6 @@
 #! /bin/bash
 
-ssh-add /Users/cimentadaj/.ssh/id_rsa
+ssh-add /Users/cimentadaj/.ssh/cimentadaj-GitHub
 
 cd /Users/cimentadaj/Downloads/gitrepo/bicing_experiment
 
