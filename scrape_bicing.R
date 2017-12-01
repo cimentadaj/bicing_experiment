@@ -39,7 +39,7 @@ test_url <-
     )
 
 # Repeat every minute for 3 hours
-repeat_length <- 10
+repeat_length <- 2
 
 iterative_bicing <-
   map_dfr(seq_len(repeat_length), ~ {
@@ -59,7 +59,7 @@ iterative_bicing <-
     filter(id == 379) %>%
     mutate(time = lubridate::now())
   
-  Sys.sleep(60)
+  Sys.sleep(5)
   bicing
 })
 
