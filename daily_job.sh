@@ -7,5 +7,6 @@ cd /Users/cimentadaj/Downloads/gitrepo/bicing_experiment
 git add .
 git commit -m "Automatic commit for bicing"
 
-git remote set-url origin git@github.com:cimentadaj/bicing_experiment.git
-git push
+git remote set-url origin https://github.com/cimentadaj/bicing_experiment.git
+
+git push origin master
