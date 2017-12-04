@@ -1,4 +1,3 @@
-library(rprojroot)
 library(httr)
 library(jsonlite)
 library(tidyverse)
@@ -40,7 +39,7 @@ test_url <-
     )
 
 # Repeat every minute for 3 hours
-repeat_length <- 50
+repeat_length <- 10
 
 iterative_bicing <-
   map_dfr(seq_len(repeat_length), ~ {
@@ -60,7 +59,7 @@ iterative_bicing <-
     filter(id == 379) %>%
     mutate(time = lubridate::now())
   
-  Sys.sleep(60)
+  Sys.sleep(5)
   bicing
 })
 
