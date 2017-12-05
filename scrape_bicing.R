@@ -74,3 +74,14 @@ write_rds(binded_data, file_path)
 # # A df with 11k rows is only 0.4 MB, so you can store it on github
 # 
 # df_large <- map_dfr(1:131400, ~ iterative_bicing[1, ])
+
+R
+readr::read_rds("bicing.rds")
+quit()
+n
+
+
+R
+readr::write_rds(tibble::tibble(), "bicing.rds")
+quit()
+n
