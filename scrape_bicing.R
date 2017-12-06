@@ -39,7 +39,7 @@ test_url <-
     )
 
 # Repeat every minute for 3 hours
-repeat_length <- 10
+repeat_length <- 60 * 3
 
 iterative_bicing <-
   map_dfr(seq_len(repeat_length), ~ {
@@ -48,19 +48,14 @@ iterative_bicing <-
   
   bicycle_url <- content(test_bike)$result$results[[1]]$url
   
-  bicing <-
-    bicycle_url %>%
-    GET() %>%
-    .$content %>%
-    rawToChar() %>%
-    fromJSON() %>%
-    .$stations %>%
-    select(id, slots, bikes, status) %>%
-    filter(id == 379) %>%
-    mutate(time = lubridate::now())
-  
-  Sys.sleep(5)
-  bicing
+  bicing <- fromJSON(rawToChar(GET(bicycle_url)$content))$stations
+    
+  bicing_summary <- bicing[bicing$id == 379, c("id", "slots", "bikes", "status")]
+    
+  bicing_summary$time <- lubridate::now() + lubridate::hours(1)
+
+  Sys.sleep(60)
+  bicing_summary
 })
 
 binded_data <-
