@@ -39,7 +39,7 @@ test_url <-
     )
 
 # Repeat every minute for 3 hours
-repeat_length <- 60 * 3
+repeat_length <- 10
 
 iterative_bicing <-
   map_dfr(seq_len(repeat_length), ~ {
@@ -54,7 +54,7 @@ iterative_bicing <-
     
   bicing_summary$time <- lubridate::now() + lubridate::hours(1)
 
-  Sys.sleep(60)
+  Sys.sleep(5)
   bicing_summary
 })
 
@@ -70,13 +70,13 @@ write_rds(binded_data, file_path)
 # 
 # df_large <- map_dfr(1:131400, ~ iterative_bicing[1, ])
 
-# R
-# readr::read_rds("bicing.rds")
-# quit()
-# n
+R
+readr::read_rds("bicing.rds")
+quit()
+n
 # 
 # 
-# R
-# readr::write_rds(tibble::tibble(), "bicing.rds")
-# quit()
-# n
+R
+readr::write_rds(tibble::tibble(), "bicing.rds")
+quit()
+n
