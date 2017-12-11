@@ -1,9 +1,10 @@
 library(httr)
 library(jsonlite)
+library(DBI)
 library(tidyverse)
 
-
 # # grab the list of datasets from the API
+
 # open_data <-
 #   GET("http://opendata-ajuntament.barcelona.cat/data/api/3/action/package_list",
 #       config = list(`content-type` = "application/json"))
@@ -27,41 +28,98 @@ library(tidyverse)
 # chmod +x daily_job.sh
 # chmod +x scrape_bicing.R
 
-wd <- "/Users/cimentadaj/Downloads/gitrepo/bicing_experiment"
-file_path <- file.path(wd, "bicing.rds")
-
-main_data <- read_rds(file_path)
+# wd <- "/home/cimentadaj/bicycle"
 
 test_url <-
   paste0(
     "http://opendata-ajuntament.barcelona.cat/data/api/3/action/resource_search?query=name:",
     "bicing"
-    )
+  )
 
 # Repeat every minute for 3 hours
-repeat_length <- 10
+station <- "379"
 
-iterative_bicing <-
-  map_dfr(seq_len(repeat_length), ~ {
-  test_bike <- GET(test_url)
-  # I think dataset codes are under "code"
+# Wrap GET so that whenever there's a 404 it returns an R error
+my_GET <- function(x, config = list(), ...) {
+  stop_for_status(GET(url = x, config = config, ...))
+}
+
+# If it can't connect to the bicing API will throw an error
+test_bike <- my_GET(test_url)
+bicycle_url <- content(test_bike)$result$results[[1]]$url
+
+# turn that my_GET so that if there's an error the computation doesn't stop
+# but changes the result based on that error
+safe_GET <- safely(my_GET)
+
+
+safe_request <- safe_GET(bicycle_url)
+
+# Bcn time (+1 because the server is in amsterdam)
+current_time <- as.character(lubridate::now() + lubridate::hours(1))
+
+# If there's an error, return an empty df with the error in the error column
+print(safe_request$error)
+
+if (!is.null(safe_request$error)) {
   
-  bicycle_url <- content(test_bike)$result$results[[1]]$url
+  summary_bicing <-
+    tibble(id = station,
+           slots = NA,
+           bikes = NA,
+           status = NA,
+           time = current_time,
+           error = as.character(safe_request$error))
   
-  bicing <- fromJSON(rawToChar(GET(bicycle_url)$content))$stations
+} else {
+  
+  bicing <- fromJSON(rawToChar(safe_request$result$content))$stations
+  print(paste0("Dim of whole bicing df: ", dim(bicing)))
+  
+  station_there <- bicing$id == station
+  
+  # If the station is not there, return an empty tibble()
+  if (!any(station_there)) {
+    print("Station not available!")
+    summary_bicing <-
+      tibble(id = station,
+             slots = NA,
+             bikes = NA,
+             status = NA,
+             time = current_time,
+             error = "Station not available")
     
-  bicing_summary <- bicing[bicing$id == 379, c("id", "slots", "bikes", "status")]
+    summary_bicing
+  } else {
     
-  bicing_summary$time <- lubridate::now() + lubridate::hours(1)
+    summary_bicing <- bicing[station_there, c("id", "slots", "bikes", "status")]
+    
+    print(paste0("Dim after subsetting station: ", dim(summary_bicing)))
+    summary_bicing$time <- current_time
+    summary_bicing$error <- NA
+    print(paste0("Dim after time and error vars: ", dim(summary_bicing)))
+    
+    summary_bicing
+  }
+}
 
-  Sys.sleep(5)
-  bicing_summary
-})
+con <- dbConnect(RMySQL::MySQL(),
+                 dbname = "bicing",
+                 user = "cimentadaj",
+                 password = "Lolasouno2",
+                 port = 3306)
 
-binded_data <-
-  bind_rows(main_data, iterative_bicing)
+# dbListTables(con)
 
-write_rds(binded_data, file_path)
+# main_data <- as_tibble(dbReadTable(con, "bicing_station"))
+
+
+# binded_data <-
+#   bind_rows(main_data, summary_bicing)
+
+write_success <-
+  dbWriteTable(conn = con, "bicing_station", summary_bicing,
+               append = TRUE, row.names = FALSE)
 
 # # 6 hours a days gives 360 rows by 30 days
 # (60 * 6) * 30
@@ -70,13 +128,4 @@ write_rds(binded_data, file_path)
 # 
 # df_large <- map_dfr(1:131400, ~ iterative_bicing[1, ])
 
-R
-readr::read_rds("bicing.rds")
-quit()
-n
-# 
-# 
-R
-readr::write_rds(tibble::tibble(), "bicing.rds")
-quit()
-n
+if (write_success) print("Append success") else print("No success")
