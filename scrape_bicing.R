@@ -55,8 +55,7 @@ safe_GET <- safely(my_GET)
 
 safe_request <- safe_GET(bicycle_url)
 
-# Bcn time (+1 because the server is in amsterdam)
-current_time <- as.character(lubridate::now() + lubridate::hours(1))
+current_time <- as.character(lubridate::now())
 
 # If there's an error, return an empty df with the error in the error column
 print(safe_request$error)
