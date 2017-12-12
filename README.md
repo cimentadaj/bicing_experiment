@@ -27,7 +27,7 @@ All steps:
 
 -   [This](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-remote-database-to-optimize-site-performance-with-mysql) is an outdated guide by Digital Ocean which might be helpful. Some of the steps below are taken from that guide.
 
--   Alter `sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf` and change `bind-address` to have the **IP** of your server. This is so your server can listen to IP's from outside the localhost network.
+-   Alter `sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf` and change `bind-address` to have the '0.0.0.0' This is so your server can listen to IP's from outside the localhost network.
 
 -   Create two users to access the data base: a user from your local computer and a user from your server.
 
