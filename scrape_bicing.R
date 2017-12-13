@@ -76,7 +76,8 @@ if (!is.null(safe_request$error)) {
   }
 }
 
-# Get password from pw.txt, also used from the scheduele MySQL query
+# pw.txt should be a txt file with only the password
+# Currently not in the repo but in the server and local computer
 pw <- readLines("pw.txt")
 
 # Connect to the database
