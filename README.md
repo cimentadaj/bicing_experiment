@@ -201,7 +201,7 @@ MAILTO="your@email.com" # Your email to receive emails
 # >>scrape_log.txt 2>&1: Save the output to scrape_log.txt (which we created) and DON'T send an email
 # because we don't want to received 29 emails.
 
-00 12 * * * /bin/bash sql_query.sql
+00 12 * * * /bin/bash sql_query.sh
 # Instead of receiving 29 emails, run a query the minute after the scraping ends
 # to filter how many rows were added between 11:30 and 11:59
 # By default it will send the result of the query to your email
@@ -265,7 +265,7 @@ if (write_success) print("Append success") else print("No success")
 
 Something to keep in mind, by default you can connect from the your local computer to the remote DB by port 3306. This port can be closed if you're in a public internet network or a network connection from a university. If you can't connect, make you sort this out with the personnel from that network (it happened to me with my university network).
 
-What does `sql_query.sql` have?
+What does `sql_query.sh` have?
 
 A very simple SQL query:
 
@@ -302,6 +302,8 @@ And that should be it! Make sure you run each of these steps separately so that 
 
 Hope this was helpful!
 
-PS: \* [Basic MySQL tutorial](https://www.digitalocean.com/community/tutorials/a-basic-mysql-tutorial)
+PS:
+
+-   [Basic MySQL tutorial](https://www.digitalocean.com/community/tutorials/a-basic-mysql-tutorial)
 
 -   I use SQL Workbench to run queries from my local computer
