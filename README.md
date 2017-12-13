@@ -67,8 +67,6 @@ mysql -u username -h your_server_ip -p
 
 -   Now install `odbc` in your Ubuntu server. I follow [this](I%20followed%20this:%20https://askubuntu.com/questions/800216/installing-ubuntu-16-04-lts-how-to-install-odbc)
 
-Note: you might need to change the url's and directories to a **newer** version of `odbc` so don't simply copy and paste the links from below.
-
 ``` bash
 sudo mkdir mysql && cd mysql
 
@@ -80,6 +78,8 @@ sudo tar -xvf mysql-connector-odbc-5.3.9-linux-ubuntu16.04-x86-64bit.tar.gz
 sudo cp mysql/mysql-connector-odbc-5.3.9-linux-ubuntu16.04-x86-64bit/lib/libmyodbc5a.so /usr/lib/x86_64-linux-gnu/odbc/
 # If the odbc folder doesn't exists, create it with mkdir /usr/lib/x86_64-linux-gnu/odbc/
 ```
+
+Note: you might need to change the url's and directories to a **newer** version of `odbc` so don't simply copy and paste the links from below.
 
 -   Create and update the `odbc` settings.
 
@@ -120,7 +120,7 @@ Socket                = /var/run/mysqld/mysqld.sock
 
 # Finally, run
 
-ln -s /var/run/mysqld/mysqld.sock /tmp/mysql.sock
+sudo ln -s /var/run/mysqld/mysqld.sock /tmp/mysql.sock
 
 # to move the socket to the folder where the DBI pkgs
 # search for it
@@ -131,8 +131,6 @@ sudo service mysql restart;
 
 # to restart mysql server
 ```
-
-That did it for me. Now I could connect to the database from R from my local computer and from the server itself. Remember to change some of the arguments from below.
 
 Connecting to the database locally and remotely
 -----------------------------------------------
@@ -160,14 +158,16 @@ From R in the server
 ``` r
 con <- dbConnect(RMySQL::MySQL(),
                  dbname = "bicing",
-                 user = username,
-                 password = password,
+                 user = username, # remember to change to your username (in quotes)
+                 password = password, # remember to change to your password (in quotes)
                  port = 3306)
 
 dbListTables(con)
 
 bike_stations <- dbReadTable(con, "bicing_station")
 ```
+
+That did it for me. Now I could connect to the database from R from my local computer and from the server itself.
 
 Scraping automatically
 ----------------------
