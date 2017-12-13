@@ -3,11 +3,14 @@ Setup MySQL DB
 Jorge Cimentada
 12/11/2017
 
+Setting up the data base
+------------------------
+
 This is a short tutorial on the steps I had to take to setup a database on my remote server and connect both from my local computer as well as from my server.
 
 This worked for my Digital Ocean droplet 512 MB and 20 GB disk with Ubuntu 16.04.3 x64.
 
-It's better to do *ALL* of this as root because I sometimes forgot to write `sudo` and many of the things I installed were raising errors. For example, when installing R packages that where ran by `cron` in a script, if installed through a non-root user the packages were said to be `'not installed'` (when I fact running the script separately was fine). However, when I installed the packages loggin in as root the packages were installed successfully.
+It's better to do *ALL* of this as a user in your server but remember to append `sudo` to everything. Nonetheless, beware of problems like the ones I encountered. For example, when installing R packages that where ran by `cron` in a script, if installed through a non-root user the packages were said to be `'not installed'` (when I fact running the script separately was fine). However, when I installed the packages logged in as root the packages were installed successfully.
 
 All steps:
 
@@ -55,6 +58,7 @@ All steps:
 <!-- -->
 
     /* Login from your server. Replace username for your username */
+    /* -u stands for user and -p will ask for your password */
     mysql -u username -h localhost -p
 
 
@@ -130,6 +134,9 @@ sudo service mysql restart;
 
 That did it for me. Now I could connect to the database from R from my local computer and from the server itself. Remember to change some of the arguments from below.
 
+Connecting to the database locally and remotely
+-----------------------------------------------
+
 From my local computer:
 
 ``` r
@@ -162,4 +169,137 @@ dbListTables(con)
 bike_stations <- dbReadTable(con, "bicing_station")
 ```
 
--   [Basic MySQL tutorial](https://www.digitalocean.com/community/tutorials/a-basic-mysql-tutorial)
+Scraping automatically
+----------------------
+
+So far you should have a database in your server which you can connect locally and remotely. I assume you have a working script that can actually add/retrieve information from the remote database. Here I will explain how to set up the scraping to run automatically as a `cron` job and get a final email with the summary of the scrape.
+
+-   Create a text file to save the output of the scraping with `sudo touch scrape_log.txt`
+
+-   Write `cron -e` logged in as your non-root user.
+
+-   At the bottom of the interactive `cron` specify these options:
+
+``` bash
+SHELL=/bin/bash # the path to the predetermined program to run cron jobs. Default bash
+
+PATH=bla/bla/bla # PATH I’m not sure what’s for but I pasted the output of echo $PATH.
+
+HOME= your/dr/ofinteres # Path to the directory where the scripts will be executed (where the script is)
+
+MAILTO="your@email.com" # Your email to receive emails
+
+# The actual cron jobs. Below each job I explain them
+30-59 11 * * * /usr/bin/Rscript scrape_bicing.R >>scrape_log.txt 2>&1
+
+# Run this cron job from 11:30 to 11:59 every day (*), every month (*), every year(*): 30-59 11 * * *
+
+# Use R to run the script: /usr/bin/Rscript
+# You can find this directory with which Rscript
+
+# Execute the file scrape_bicing.R (which is looked for in the HOME variable specified above)
+# >>scrape_log.txt 2>&1: Save the output to scrape_log.txt (which we created) and DON'T send an email
+# because we don't want to received 29 emails.
+
+00 12 * * * /bin/bash sql_query.sql
+# Instead of receiving 29 emails, run a query the minute after the scraping ends
+# to filter how many rows were added between 11:30 and 11:59
+# By default it will send the result of the query to your email
+```
+
+Great but what does `scrape_bicing.R` have?
+
+The script should do something along the lines of:
+
+``` r
+# Load libraries
+library(httr)
+library(DBI)
+library(RMySQL)
+
+# The url of your api
+api_url <- "bla/bla"
+
+# Wrap GET so that whenever the request fails it returns an R error
+my_GET <- function(x, config = list(), ...) {
+  stop_for_status(GET(url = x, config = config, ...))
+}
+
+# If it can't connect to the API will throw an R error
+test_bike <- my_GET(api_url)
+
+
+## Do API calls here
+## I assume the result is a data.frame or something like that
+## It should have the same column names as the SQL database.
+
+# Establish the connection to the database.
+# This script is run within the server, so the connection
+# should not specify the server ip, it assumes it's
+# the localhost
+
+con <- dbConnect(MySQL(),
+                 dbname = database_name, # in "" quotes
+                 user = your_user, # in "" quotes
+                 password = your_password, # in "" quotes
+                 port = 3306)
+
+# Append the table
+write_success <-
+  dbWriteTable(conn = con, # connection from above
+              "table name", # name of the table to append (in quotes)
+              api output, # data frame from the API output
+              append = TRUE, row.names = FALSE) # to append instead of overwrite and ignore row.names
+
+# Write your results to the database. In my API call
+# I considered many possible errors and coded the request
+# very defensively, running the script many times under certain
+# scenarios (no internet, getting different results).
+# If you get unexpected results from your API request then this step will
+# not succeed.
+
+
+# If the append was successfull, write_success should be TRUE
+if (write_success) print("Append success") else print("No success")
+```
+
+Something to keep in mind, by default you can connect from the your local computer to the remote DB by port 3306. This port can be closed if you're in a public internet network or a network connection from a university. If you can't connect, make you sort this out with the personnel from that network (it happened to me with my university network).
+
+What does `sql_query.sql` have?
+
+A very simple SQL query:
+
+``` sql
+read PASS < pw.txt /* Read the password from a pw.txt file you create with your user pasword*/
+
+mysql -uroot -p$PASS database_name -e "SELECT id, error_msg, COUNT(*) AS count FROM bicing_station WHERE time >= CONCAT(CURDATE(),' ','11:30:00') AND time <= CONCAT(CURDATE(),' ','12:00:00') GROUP BY id, error_msg;"
+
+/*
+mysql: run mysql
+
+-uroot: specify your mysql username (note there are no spaces)
+
+-p$PASS: -p is for password and $PASS is the variable with the password
+
+database_name: is the data base name
+
+-e: is short for -execute a query
+
+The remaining is the query to execute. I would make sure the query
+works by running this same line in the server interactively.
+
+What this query means is to get the counts of the id and error messages
+where the time is between the scheduele cron of the API request.
+
+This way I get a summary of the error messages and how many lines were
+appended between the time the script should've started and should've ended
+*/
+```
+
+As stated in the first line of the code chunk, create a text file with your password. You can do so with `echo "Your SQL username password" >> pw.txt`. That should allow PASS to read in the password just fine.
+
+And that should be it! Make sure you run each of these steps separately so that they work on it's own and you don'get weird errors. This workflow will now run `cron` jobs at whatever time you set it, return the output to a text file (in case something bad happens and you want to look at the log) and run a query after it finishes so that you only get one email with a summary of API requests.
+
+Hope this was helpful!
+
+PS: \* [Basic MySQL tutorial](https://www.digitalocean.com/community/tutorials/a-basic-mysql-tutorial) \* I use SQL Workbench to run queries from my local computer
