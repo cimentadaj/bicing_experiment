@@ -55,7 +55,8 @@ safe_GET <- safely(my_GET)
 
 safe_request <- safe_GET(bicycle_url)
 
-current_time <- as.character(lubridate::now())
+# Bcn time (+1 because the server is in amsterdam)
+current_time <- as.character(lubridate::now() + lubridate::hours(1))
 
 # If there's an error, return an empty df with the error in the error column
 print(safe_request$error)
@@ -68,7 +69,7 @@ if (!is.null(safe_request$error)) {
            bikes = NA,
            status = NA,
            time = current_time,
-           error = as.character(safe_request$error))
+           error_msg = as.character(safe_request$error))
   
 } else {
   
@@ -86,7 +87,7 @@ if (!is.null(safe_request$error)) {
              bikes = NA,
              status = NA,
              time = current_time,
-             error = "Station not available")
+             error_msg = "Station not available")
     
     summary_bicing
   } else {
@@ -95,7 +96,7 @@ if (!is.null(safe_request$error)) {
     
     print(paste0("Dim after subsetting station: ", dim(summary_bicing)))
     summary_bicing$time <- current_time
-    summary_bicing$error <- NA
+    summary_bicing$error_msg <- NA
     print(paste0("Dim after time and error vars: ", dim(summary_bicing)))
     
     summary_bicing
