@@ -142,10 +142,10 @@ library(DBI)
 library(RMySQL)
 
 con <- dbConnect(MySQL(), # If the database changed, change this
-                 host = your_server_ip,
+                 host = your_server_ip, # in "" quotes.
                  dbname = "bicing",
-                 user = username,
-                 password = password,
+                 user = username, # remember to change to your username (in quotes)
+                 password = password, # remember to change to your password (in quotes)
                  port = 3306)
 
 dbListTables(con)
@@ -302,4 +302,6 @@ And that should be it! Make sure you run each of these steps separately so that 
 
 Hope this was helpful!
 
-PS: \* [Basic MySQL tutorial](https://www.digitalocean.com/community/tutorials/a-basic-mysql-tutorial) \* I use SQL Workbench to run queries from my local computer
+PS: \* [Basic MySQL tutorial](https://www.digitalocean.com/community/tutorials/a-basic-mysql-tutorial)
+
+-   I use SQL Workbench to run queries from my local computer
