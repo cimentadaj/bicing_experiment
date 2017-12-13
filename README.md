@@ -1,7 +1,3 @@
-Setup MySQL DB
-================
-Jorge Cimentada
-12/11/2017
 
 Setting up the data base
 ------------------------
@@ -22,11 +18,11 @@ All steps:
 
 -   Follow these steps to create an empty table within a database
 
-<!-- -->
-
-    CREATE DATABASE bicing;
-    USE bicing;
-    CREATE TABLE bicing_station (id VARCHAR(30), slots VARCHAR(30), bikes VARCHAR(30), status VARCHAR(30), time VARCHAR(30), error VARCHAR(30));
+``` sql
+CREATE DATABASE bicing;
+USE bicing;
+CREATE TABLE bicing_station (id VARCHAR(30), slots VARCHAR(30), bikes VARCHAR(30), status VARCHAR(30), time VARCHAR(30), error VARCHAR(30));
+```
 
 -   [This](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-remote-database-to-optimize-site-performance-with-mysql) is an outdated guide by Digital Ocean which might be helpful. Some of the steps below are taken from that guide.
 
@@ -36,34 +32,38 @@ All steps:
 
 [This](#%20https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql) is a Digital Ocean tutorial to create and grant access to new users. Some of the steps below are taken from that guide.
 
-    mysql -u root -p /* Log in to MySQL */
+``` bash
+mysql -u root -p /* Log in to MySQL */
+```
 
-    /* Create user for local computer. Note that when username and ip are in '' they need to be in those quotes. Also, the ip address you can find easily by writing what's my ip in Google*/
+``` sql
+/* Create user for local computer. Note that when username and ip are in '' they need to be in those quotes. Also, the ip address you can find easily by writing what's my ip in Google*/
 
-    CREATE USER 'username'@'ip_address_of_your_computer' IDENTIFIED BY 'password';
-    GRANT ALL ON bicing.* TO username@ip_address_of_your_computer;
+CREATE USER 'username'@'ip_address_of_your_computer' IDENTIFIED BY 'password';
+GRANT ALL ON bicing.* TO username@ip_address_of_your_computer;
 
-    /* Create user for server. For this user don't change localhost as that already specifies that it belongs to the same computer. */
+/* Create user for server. For this user don't change localhost as that already specifies that it belongs to the same computer. */
 
-    CREATE USER 'username'@'localhost' IDENTIFIED BY 'password';
-    GRANT ALL ON bicing.* TO username@localhost;
+CREATE USER 'username'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL ON bicing.* TO username@localhost;
 
-    /* Make sure the privileges are isntalled */
-    FLUSH PRIVILEGES;
+/* Make sure the privileges are isntalled */
+FLUSH PRIVILEGES;
 
-    quit /* To quit MySQL*/
+quit /* To quit MySQL*/
+```
 
 -   Test whether the access worked for both users
 
-<!-- -->
+``` bash
+# Login from your server. Replace username for your username 
+# -u stands for user and -p will ask for your password 
+mysql -u username -h localhost -p
 
-    /* Login from your server. Replace username for your username */
-    /* -u stands for user and -p will ask for your password */
-    mysql -u username -h localhost -p
 
-
-    /* Login from your LOCAL computer. Replace username for your username and your_server_ip from the server's IP */
-    mysql -u username -h your_server_ip -p
+# Login from your LOCAL computer. Replace username for your username and your_server_ip from the server's IP
+mysql -u username -h your_server_ip -p
+```
 
 -   Now install `odbc` in your Ubuntu server. I follow [this](I%20followed%20this:%20https://askubuntu.com/questions/800216/installing-ubuntu-16-04-lts-how-to-install-odbc)
 

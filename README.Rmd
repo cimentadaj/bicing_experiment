@@ -1,7 +1,4 @@
 ---
-title: "Setup MySQL DB"
-author: "Jorge Cimentada"
-date: "12/11/2017"
 output:
   github_document:
     html_preview: false
@@ -25,7 +22,7 @@ All steps:
 
 * Follow these steps to create an empty table within a database
 
-```
+```{sql, eval = FALSE}
 CREATE DATABASE bicing;
 USE bicing;
 CREATE TABLE bicing_station (id VARCHAR(30), slots VARCHAR(30), bikes VARCHAR(30), status VARCHAR(30), time VARCHAR(30), error VARCHAR(30));
@@ -39,9 +36,11 @@ CREATE TABLE bicing_station (id VARCHAR(30), slots VARCHAR(30), bikes VARCHAR(30
 
 [This](# https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql) is a Digital Ocean tutorial to create and grant access to new users. Some of the steps below are taken from that guide.
 
-```
+```{bash, eval = FALSE}
 mysql -u root -p /* Log in to MySQL */
+```
 
+```{sql, eval = FALSE}
 /* Create user for local computer. Note that when username and ip are in '' they need to be in those quotes. Also, the ip address you can find easily by writing what's my ip in Google*/
 
 CREATE USER 'username'@'ip_address_of_your_computer' IDENTIFIED BY 'password';
@@ -60,13 +59,13 @@ quit /* To quit MySQL*/
 
 * Test whether the access worked for both users
 
-```
-/* Login from your server. Replace username for your username */
-/* -u stands for user and -p will ask for your password */
+```{bash, eval = FALSE}
+# Login from your server. Replace username for your username 
+# -u stands for user and -p will ask for your password 
 mysql -u username -h localhost -p
 
 
-/* Login from your LOCAL computer. Replace username for your username and your_server_ip from the server's IP */
+# Login from your LOCAL computer. Replace username for your username and your_server_ip from the server's IP
 mysql -u username -h your_server_ip -p
 ```
 
