@@ -34,10 +34,8 @@ CREATE TABLE bicing_station (id VARCHAR(30), slots VARCHAR(30), bikes VARCHAR(30
 
 * Create two users to access the data base: a user from your local computer and a user from your server.
 
-[This](# https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql) is a Digital Ocean tutorial to create and grant access to new users. Some of the steps below are taken from that guide.
-
 ```{bash, eval = FALSE}
-mysql -u root -p /* Log in to MySQL */
+mysql -u root -p # Log in to MySQL. -u stands for user and -p for password
 ```
 
 ```{sql, eval = FALSE}
