@@ -17,62 +17,79 @@ my_GET <- function(x, config = list(), ...) {
   stop_for_status(GET(url = x, config = config, ...))
 }
 
-# If it can't connect to the bicing API will throw an error
-test_bike <- my_GET(test_url)
-bicycle_url <- content(test_bike)$result$results[[1]]$url
 
-# turn that my_GET so that if there's an error the computation doesn't stop
-# but changes the result based on that error
 safe_GET <- safely(my_GET)
 
-
-safe_request <- safe_GET(bicycle_url)
+# If it can't connect to the bicing API will throw an error
+test_bike <- safe_GET(test_url)
 
 # Bcn time
 current_time <- as.character(lubridate::now())
 
-# If there's an error, return an empty df with the error in the error column
-print(safe_request$error)
+# If it can't connect to the website, return a df with the error
 
-if (!is.null(safe_request$error)) {
-  
+if (!is.null(test_bike$error)) {
   summary_bicing <-
     tibble(id = station,
            slots = NA,
            bikes = NA,
            status = NA,
            time = current_time,
-           error_msg = as.character(safe_request$error))
+           error_msg = as.character(test_bike$error))
   
 } else {
+  # continue with the usual scraping
   
-  bicing <- fromJSON(rawToChar(safe_request$result$content))$stations
-  print(paste0("Dim of whole bicing df: ", dim(bicing)))
+  bicycle_url <- content(test_bike$result)$result$results[[1]]$url
   
-  station_there <- bicing$id == station
+  # turn that my_GET so that if there's an error the computation doesn't stop
+  # but changes the result based on that error
   
-  # If the station is not there, return an empty tibble()
-  if (!any(station_there)) {
-    print("Station not available!")
+  safe_request <- safe_GET(bicycle_url)
+  
+  # If there's an error, return an empty df with the error in the error column
+  print(safe_request$error)
+  
+  if (!is.null(safe_request$error)) {
+    
     summary_bicing <-
       tibble(id = station,
              slots = NA,
              bikes = NA,
              status = NA,
              time = current_time,
-             error_msg = "Station not available")
+             error_msg = as.character(safe_request$error))
     
-    summary_bicing
   } else {
     
-    summary_bicing <- bicing[station_there, c("id", "slots", "bikes", "status")]
+    bicing <- fromJSON(rawToChar(safe_request$result$content))$stations
+    print(paste0("Dim of whole bicing df: ", dim(bicing)))
     
-    print(paste0("Dim after subsetting station: ", dim(summary_bicing)))
-    summary_bicing$time <- current_time
-    summary_bicing$error_msg <- NA
-    print(paste0("Dim after time and error vars: ", dim(summary_bicing)))
+    station_there <- bicing$id == station
     
-    summary_bicing
+    # If the station is not there, return an empty tibble()
+    if (!any(station_there)) {
+      print("Station not available!")
+      summary_bicing <-
+        tibble(id = station,
+               slots = NA,
+               bikes = NA,
+               status = NA,
+               time = current_time,
+               error_msg = "Station not available")
+      
+      summary_bicing
+    } else {
+      
+      summary_bicing <- bicing[station_there, c("id", "slots", "bikes", "status")]
+      
+      print(paste0("Dim after subsetting station: ", dim(summary_bicing)))
+      summary_bicing$time <- current_time
+      summary_bicing$error_msg <- NA
+      print(paste0("Dim after time and error vars: ", dim(summary_bicing)))
+      
+      summary_bicing
+    }
   }
 }
 
@@ -83,6 +100,7 @@ pw <- readLines("pw.txt")
 # Connect to the database
 con <- dbConnect(RMySQL::MySQL(),
                  dbname = "bicing",
+                 # host = "82.196.1.229", # this is for when connecting from your local mac
                  user = "cimentadaj",
                  password = pw,
                  port = 3306)
