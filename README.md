@@ -1,22 +1,36 @@
 
-Setting up the data base
-------------------------
+This guide is OUTDATED. New guide coming soon.
 
-This is a short tutorial on the steps I had to take to setup a database on my remote server and connect both from my local computer as well as from my server.
+## Setting up the data base
 
-This worked for my Digital Ocean droplet 512 MB and 20 GB disk with Ubuntu 16.04.3 x64.
+This is a short tutorial on the steps I had to take to setup a database
+on my remote server and connect both from my local computer as well as
+from my server.
 
-It's better to do *ALL* of this as a user in your server but remember to append `sudo` to everything. Nonetheless, beware of problems like the ones I encountered. For example, when installing R packages that where ran by `cron` in a script, if installed through a non-root user the packages were said to be `'not installed'` (when I fact running the script separately was fine). However, when I installed the packages logged in as root the packages were installed successfully.
+This worked for my Digital Ocean droplet 512 MB and 20 GB disk with
+Ubuntu 16.04.3 x64.
+
+It’s better to do *ALL* of this as a user in your server but remember to
+append `sudo` to everything. Nonetheless, beware of problems like the
+ones I encountered. For example, when installing R packages that where
+ran by `cron` in a script, if installed through a non-root user the
+packages were said to be `'not installed'` (when I fact running the
+script separately was fine). However, when I installed the packages
+logged in as root the packages were installed successfully.
 
 All steps:
 
--   [Install R](https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-16-04-2)
+  - [Install
+    R](https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-16-04-2)
 
--   [Install MySQL](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-16-04)
+  - [Install
+    MySQL](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-16-04)
 
--   Type `mysql -u root -p` to log in to MySQL
+  - Type `mysql -u root -p` to log in to MySQL
 
--   Follow these steps to create an empty table within a database
+  - Follow these steps to create an empty table within a database
+
+<!-- end list -->
 
 ``` sql
 CREATE DATABASE bicing;
@@ -24,11 +38,19 @@ USE bicing;
 CREATE TABLE bicing_station (id VARCHAR(30), slots VARCHAR(30), bikes VARCHAR(30), status VARCHAR(30), time VARCHAR(30), error VARCHAR(30));
 ```
 
--   [This](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-remote-database-to-optimize-site-performance-with-mysql) is an outdated guide by Digital Ocean which might be helpful. Some of the steps below are taken from that guide.
+  - [This](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-remote-database-to-optimize-site-performance-with-mysql)
+    is an outdated guide by Digital Ocean which might be helpful. Some
+    of the steps below are taken from that guide.
 
--   Alter `sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf` and change `bind-address` to have the '0.0.0.0' This is so your server can listen to IP's from outside the localhost network.
+  - Alter `sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf` and change
+    `bind-address` to have the ‘0.0.0.0’ This is so your server can
+    listen to IP’s from outside the localhost network.
 
--   Create two users to access the data base: a user from your local computer and a user from your server.
+  - Create two users to access the data base: a user from your local
+    computer and a user from your
+server.
+
+<!-- end list -->
 
 ``` bash
 mysql -u root -p # Log in to MySQL. -u stands for user and -p for password
@@ -51,7 +73,9 @@ FLUSH PRIVILEGES;
 quit /* To quit MySQL*/
 ```
 
--   Test whether the access worked for both users
+  - Test whether the access worked for both users
+
+<!-- end list -->
 
 ``` bash
 # Login from your server. Replace username for your username 
@@ -63,7 +87,10 @@ mysql -u username -h localhost -p
 mysql -u username -h your_server_ip -p
 ```
 
--   Now install `odbc` in your Ubuntu server. I follow [this](I%20followed%20this:%20https://askubuntu.com/questions/800216/installing-ubuntu-16-04-lts-how-to-install-odbc)
+  - Now install `odbc` in your Ubuntu server. I follow
+    [this](I%20followed%20this:%20https://askubuntu.com/questions/800216/installing-ubuntu-16-04-lts-how-to-install-odbc)
+
+<!-- end list -->
 
 ``` bash
 sudo mkdir mysql && cd mysql
@@ -77,9 +104,12 @@ sudo cp mysql/mysql-connector-odbc-5.3.9-linux-ubuntu16.04-x86-64bit/lib/libmyod
 # If the odbc folder doesn't exists, create it with mkdir /usr/lib/x86_64-linux-gnu/odbc/
 ```
 
-Note: you might need to change the url's and directories to a **newer** version of `odbc` so don't simply copy and paste the links from below.
+Note: you might need to change the url’s and directories to a **newer**
+version of `odbc` so don’t simply copy and paste the links from below.
 
--   Create and update the `odbc` settings.
+  - Create and update the `odbc` settings.
+
+<!-- end list -->
 
 ``` bash
 sudo touch /etc/odbcinst.ini
@@ -130,8 +160,7 @@ sudo service mysql restart;
 # to restart mysql server
 ```
 
-Connecting to the database locally and remotely
------------------------------------------------
+## Connecting to the database locally and remotely
 
 From my local computer:
 
@@ -165,18 +194,26 @@ dbListTables(con)
 bike_stations <- dbReadTable(con, "bicing_station")
 ```
 
-That did it for me. Now I could connect to the database from R from my local computer and from the server itself.
+That did it for me. Now I could connect to the database from R from my
+local computer and from the server itself.
 
-Scraping automatically
-----------------------
+## Scraping automatically
 
-So far you should have a database in your server which you can connect locally and remotely. I assume you have a working script that can actually add/retrieve information from the remote database. Here I will explain how to set up the scraping to run automatically as a `cron` job and get a final email with the summary of the scrape.
+So far you should have a database in your server which you can connect
+locally and remotely. I assume you have a working script that can
+actually add/retrieve information from the remote database. Here I will
+explain how to set up the scraping to run automatically as a `cron` job
+and get a final email with the summary of the scrape.
 
--   Create a text file to save the output of the scraping with `sudo touch scrape_log.txt`
+  - Create a text file to save the output of the scraping with `sudo
+    touch scrape_log.txt`
 
--   Write `cron -e` logged in as your non-root user.
+  - Write `cron -e` logged in as your non-root user.
 
--   At the bottom of the interactive `cron` specify these options:
+  - At the bottom of the interactive `cron` specify these
+options:
+
+<!-- end list -->
 
 ``` bash
 SHELL=/bin/bash # the path to the predetermined program to run cron jobs. Default bash
@@ -261,11 +298,17 @@ write_success <-
 if (write_success) print("Append success") else print("No success")
 ```
 
-Something to keep in mind, by default you can connect from the your local computer to the remote DB by port 3306. This port can be closed if you're in a public internet network or a network connection from a university. If you can't connect, make you sort this out with the personnel from that network (it happened to me with my university network).
+Something to keep in mind, by default you can connect from the your
+local computer to the remote DB by port 3306. This port can be closed if
+you’re in a public internet network or a network connection from a
+university. If you can’t connect, make you sort this out with the
+personnel from that network (it happened to me with my university
+network).
 
 What does `sql_query.sh` have?
 
-A very simple SQL query:
+A very simple SQL
+query:
 
 ``` sql
 read PASS < pw.txt /* Read the password from a pw.txt file you create with your user pasword*/
@@ -294,14 +337,22 @@ appended between the time the script should've started and should've ended
 */
 ```
 
-As stated in the first line of the code chunk, create a text file with your password. You can do so with `echo "Your SQL username password" >> pw.txt`. That should allow PASS to read in the password just fine.
+As stated in the first line of the code chunk, create a text file with
+your password. You can do so with `echo "Your SQL username password" >>
+pw.txt`. That should allow PASS to read in the password just fine.
 
-And that should be it! Make sure you run each of these steps separately so that they work on it's own and you don'get weird errors. This workflow will now run `cron` jobs at whatever time you set it, return the output to a text file (in case something bad happens and you want to look at the log) and run a query after it finishes so that you only get one email with a summary of API requests.
+And that should be it\! Make sure you run each of these steps separately
+so that they work on it’s own and you don’get weird errors. This
+workflow will now run `cron` jobs at whatever time you set it, return
+the output to a text file (in case something bad happens and you want to
+look at the log) and run a query after it finishes so that you only get
+one email with a summary of API requests.
 
-Hope this was helpful!
+Hope this was helpful\!
 
 PS:
 
--   [Basic MySQL tutorial](https://www.digitalocean.com/community/tutorials/a-basic-mysql-tutorial)
+  - [Basic MySQL
+    tutorial](https://www.digitalocean.com/community/tutorials/a-basic-mysql-tutorial)
 
--   I use SQL Workbench to run queries from my local computer
+  - I use SQL Workbench to run queries from my local computer

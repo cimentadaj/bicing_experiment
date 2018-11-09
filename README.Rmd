@@ -4,6 +4,8 @@ output:
     html_preview: false
 ---
 
+This guide is OUTDATED. New guide coming soon.
+
 ## Setting up the data base
 
 This is a short tutorial on the steps I had to take to setup a database on my remote server and connect both from my local computer as well as from my server.
