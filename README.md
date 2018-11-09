@@ -1,5 +1,5 @@
 
-This guide is OUTDATED. New guide coming soon.
+This guide is OUTDATE. New guide coming soon.
 
 ## Setting up the data base
 

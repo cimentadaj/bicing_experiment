@@ -57,6 +57,7 @@ cols <- c("time",
 
 bicing <- bicing[, cols]
 
+
 #####
 
 # pw.txt should be a txt file with only the password
@@ -64,13 +65,40 @@ bicing <- bicing[, cols]
 pw <- readLines("pw.txt")
 
 #### Insert into database ####
-con <- dbConnect(MySQL(),
-                 host = "178.62.233.233",
-                 dbname = "mysql",
-                 user = 
-                 password = pw)
+con <- DBI::dbConnect(RMySQL::MySQL(),
+                      host = "178.62.233.233",
+                      dbname = "bicing",
+                      user = "scraper",
+                      password = pw)
 
-write_success <- dbWriteTable(con, "available_bikes", bicing, append = TRUE)
+field_types <- c(
+  time = "DATETIME",
+  year = "SMALLINT UNSIGNED",
+  month = "TINYINT UNSIGNED",
+  day = "TINYINT UNSIGNED",
+  id = "INT UNSIGNED",
+  latitude = "FLOAT(8, 6)",
+  longitude = "FLOAT(8, 6)",
+  altitude = "SMALLINT(4)",
+  slots = "TINYINT(3) UNSIGNED",
+  bikes = "TINYINT(3) UNSIGNED",
+  status = "CHAR(4)",
+  n_stations_1 = "TINYINT(4) UNSIGNED",
+  n_stations_2 = "TINYINT(4) UNSIGNED",
+  n_stations_3 = "TINYINT(4) UNSIGNED",
+  n_stations_4 = "TINYINT(4) UNSIGNED",
+  n_stations_5 = "TINYINT(4) UNSIGNED",
+  error_msg  = "TEXT"
+)
+
+
+write_success <- DBI::dbWriteTable(conn = con,
+                                   name = "available_bikes",
+                                   value = bicing,
+                                   append=TRUE,
+                                   row.names=FALSE,
+                                   overwrite=FALSE,
+                                   field.types = field_types)
 
 # If write is a success, print success
 if (write_success) print("Append success") else print("No success")
