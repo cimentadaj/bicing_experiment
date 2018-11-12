@@ -33,7 +33,27 @@ get_resp <- function(url, attempts_left = 5, ...) {
   }
 }
 
+write_bicycle <- function(conn) {
+  print("-------------------------------------------------")
+  print("Attempting to write results to available_bikes")
+  
+  write_success <- DBI::dbWriteTable(conn = conn,
+                                     name = "available_bikes",
+                                     value = bicing,
+                                     append=TRUE,
+                                     row.names=FALSE,
+                                     overwrite=FALSE,
+                                     field.types = field_types)
+  
+  print("-------------------------------------------------")
+  if (write_success) print("Successfully wrote to available_bikes") else print("Could not write to available_bikes")
+}
+
+
 get_bicycles <- function() {
+  print("-------------------------------------------------")
+  print("Grabbing bicing data")
+  
   bicing_url <- "http://wservice.viabicing.cat/v2/stations"
   
   # If it can't connect to the bicing API will throw an error
@@ -95,6 +115,13 @@ get_bicycles <- function() {
   bicing$altitude <- as.numeric(bicing$altitude)
   bicing$slots <- as.numeric(bicing$slots)
   bicing$bikes <- as.numeric(bicing$bikes)  
+  
+  print("-------------------------------------------------")
+  print("Printing sample of bicing data")
+  print(head(bicing))
+  
+  print("-------------------------------------------------")
+  print("Bicing data returned")
   
   bicing
 }
