@@ -1,6 +1,4 @@
 
-This guide is OUTDATE. New guide coming soon.
-
 ## Setting up the data base
 
 This is a short tutorial on the steps I had to take to setup a database
@@ -8,23 +6,31 @@ on my remote server and connect both from my local computer as well as
 from my server.
 
 This worked for my Digital Ocean droplet 512 MB and 20 GB disk with
-Ubuntu 16.04.3 x64.
+Ubuntu 20.
 
-It’s better to do *ALL* of this as a user in your server but remember to
-append `sudo` to everything. Nonetheless, beware of problems like the
-ones I encountered. For example, when installing R packages that where
-ran by `cron` in a script, if installed through a non-root user the
-packages were said to be `'not installed'` (when I fact running the
-script separately was fine). However, when I installed the packages
+It’s better to do *ALL* of this as a non-root user in your server but
+remember to append `sudo` to everything. Nonetheless, beware of problems
+like the ones I encountered. For example, when installing R packages
+that where ran by `cron` in a script, if installed through a non-root
+user the packages were said to be `'not installed'` (when I fact running
+the script separately was fine). However, when I installed the packages
 logged in as root the packages were installed successfully.
 
 All steps:
 
   - [Install
-    R](https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-16-04-2)
+    R](https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-20-04)
 
-  - [Install
-    MySQL](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-16-04)
+  - \[Install
+    MySQL\](<https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04>\*\*
+
+\*\* To install MySQL: `sudo apt install mysql-server` \*\* To uninstall
+MySQL: `sudo apt-get purge mysql-*`
+
+  - I was trying to log in as sudo to mysql with `mysql -u root -p` but
+    got error `ERROR 1698 (28000): Access denied for user
+    'root'@'localhost'`. Fixed it following this:
+    <https://stackoverflow.com/questions/39281594/error-1698-28000-access-denied-for-user-rootlocalhost>
 
   - Type `mysql -u root -p` to log in to MySQL
 
@@ -35,36 +41,41 @@ All steps:
 ``` sql
 CREATE DATABASE bicing;
 USE bicing;
-CREATE TABLE bicing_station (id VARCHAR(30), slots VARCHAR(30), bikes VARCHAR(30), status VARCHAR(30), time VARCHAR(30), error VARCHAR(30));
+
+CREATE TABLE bicing_stations (id_hash VARCHAR(30), id VARCHAR(30), latitude VARCHAR(30), longitude VARCHAR(30), address VARCHAR(30), slots VARCHAR(30), empty_slots VARCHAR(30), free_bikes VARCHAR(30), ebikes VARCHAR(30), has_ebikes VARCHAR(30), status VARCHAR(30), time VARCHAR(30), day VARCHAR(30), month VARCHAR(30), year VARCHAR(30), error_msg VARCHAR(30));
 ```
 
   - [This](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-remote-database-to-optimize-site-performance-with-mysql)
     is an outdated guide by Digital Ocean which might be helpful. Some
     of the steps below are taken from that guide.
 
-  - Alter `sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf` and change
-    `bind-address` to have the ‘0.0.0.0’ This is so your server can
-    listen to IP’s from outside the localhost network.
+  - We need to allow the DB to receive connections from outside the
+    server. Alter `sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf` and
+    change `bind-address` to have the IP of your server. That is, the IP
+    of your Digital Ocean server.
+
+  - Restart MySQL with `sudo service mysql restart`
 
   - Create two users to access the data base: a user from your local
-    computer and a user from your
-server.
+    computer and a user from your server.
 
-<!-- end list -->
+First log in as root
 
 ``` bash
-mysql -u root -p # Log in to MySQL. -u stands for user and -p for password
+mysql -u root -p
 ```
+
+and then
 
 ``` sql
 /* Create user for local computer. Note that when username and ip are in '' they need to be in those quotes. Also, the ip address you can find easily by writing what's my ip in Google*/
 
-CREATE USER 'username'@'ip_address_of_your_computer' IDENTIFIED BY 'password';
+CREATE USER 'username'@'ip_address_of_your_computer' IDENTIFIED WITH mysql_native_password BY 'password';
 GRANT ALL ON bicing.* TO username@ip_address_of_your_computer;
 
 /* Create user for server. For this user don't change localhost as that already specifies that it belongs to the same computer. */
 
-CREATE USER 'username'@'localhost' IDENTIFIED BY 'password';
+CREATE USER 'username'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';
 GRANT ALL ON bicing.* TO username@localhost;
 
 /* Make sure the privileges are isntalled */
@@ -73,35 +84,41 @@ FLUSH PRIVILEGES;
 quit /* To quit MySQL*/
 ```
 
+  - Allow access through MySQL’s port with: `sudo ufw allow 3306`. If
+    there’s any troubleshooting with logging in, this article fixed my
+    problems:
+    <https://www.digitalocean.com/community/tutorials/how-to-allow-remote-access-to-mysql>
+
   - Test whether the access worked for both users
 
 <!-- end list -->
 
 ``` bash
-# Login from your server. Replace username for your username 
-# -u stands for user and -p will ask for your password 
+# Login from your server. Replace username for your username
+# -u stands for user and -p will ask for your password
 mysql -u username -h localhost -p
-
 
 # Login from your LOCAL computer. Replace username for your username and your_server_ip from the server's IP
 mysql -u username -h your_server_ip -p
 ```
 
   - Now install `odbc` in your Ubuntu server. I follow
-    [this](I%20followed%20this:%20https://askubuntu.com/questions/800216/installing-ubuntu-16-04-lts-how-to-install-odbc)
+    [this](I%20followed%20this:%20https://www.osradar.com/how-to-install-odbc-on-ubuntu-20-04/)
 
 <!-- end list -->
 
 ``` bash
+# Download odbc install mysql folder
 sudo mkdir mysql && cd mysql
-
-# Download odbc in mysql folder
-sudo wget https://dev.mysql.com/get/Downloads/Connector-ODBC/5.3/mysql-connector-odbc-5.3.9-linux-ubuntu16.04-x86-64bit.tar.gz
-
-# Unzip it and copy it somewhere.
-sudo tar -xvf mysql-connector-odbc-5.3.9-linux-ubuntu16.04-x86-64bit.tar.gz 
-sudo cp mysql/mysql-connector-odbc-5.3.9-linux-ubuntu16.04-x86-64bit/lib/libmyodbc5a.so /usr/lib/x86_64-linux-gnu/odbc/
-# If the odbc folder doesn't exists, create it with mkdir /usr/lib/x86_64-linux-gnu/odbc/
+sudo apt update
+sudo apt upgrade
+sudo apt install build-essential
+sudo wget ftp://ftp.unixodbc.org/pub/unixODBC/unixODBC-2.3.7.tar.gz
+sudo tar xvzf unixODBC-2.3.7.tar.gz
+cd unixODBC-2.3.7/
+./configure --prefix=/usr/local/unixODBC
+make
+sudo make install
 ```
 
 Note: you might need to change the url’s and directories to a **newer**
@@ -113,7 +130,6 @@ version of `odbc` so don’t simply copy and paste the links from below.
 
 ``` bash
 sudo touch /etc/odbcinst.ini
-
 sudo nano /etc/odbcinst.ini
 
 # And add
@@ -126,13 +142,10 @@ FileUsage = 1
 
 # close the nano
 # And continue
-
 sudo touch /etc/odbc.ini
-
 sudo nano /etc/odbc.ini
 
 # and add
-
 [MySQL]
 Description           = MySQL connection to database
 Driver                = MySQL Driver
@@ -162,17 +175,22 @@ sudo service mysql restart;
 
 ## Connecting to the database locally and remotely
 
+  - Install RMySQL dependencies with `sudo apt-get install
+    libmariadbclient-dev`
+
+  - Install DBI and RMySQL with `install.packages`.
+
 From my local computer:
 
 ``` r
 library(DBI)
 library(RMySQL)
 
-con <- dbConnect(MySQL(), # If the database changed, change this
-                 host = your_server_ip, # in "" quotes.
+con <- dbConnect(MySQL(),
+                 host = "", # in "" quotes.
                  dbname = "bicing",
-                 user = username, # remember to change to your username (in quotes)
-                 password = password, # remember to change to your password (in quotes)
+                 user = "", # change to your username (in quotes)
+                 password = "", # change to your password (in quotes)
                  port = 3306)
 
 dbListTables(con)
@@ -185,17 +203,19 @@ From R in the server
 ``` r
 con <- dbConnect(RMySQL::MySQL(),
                  dbname = "bicing",
-                 user = username, # remember to change to your username (in quotes)
-                 password = password, # remember to change to your password (in quotes)
+                 user = "", # change to your username (in quotes)
+                 password = "", # change to your password (in quotes)
                  port = 3306)
 
 dbListTables(con)
 
-bike_stations <- dbReadTable(con, "bicing_station")
+bike_stations <- dbReadTable(con, "bicing_stations")
 ```
 
 That did it for me. Now I could connect to the database from R from my
 local computer and from the server itself.
+
+## Scraping automatically with Airflow
 
 ## Scraping automatically
 
@@ -210,8 +230,7 @@ and get a final email with the summary of the scrape.
 
   - Write `cron -e` logged in as your non-root user.
 
-  - At the bottom of the interactive `cron` specify these
-options:
+  - At the bottom of the interactive `cron` specify these options:
 
 <!-- end list -->
 
@@ -244,7 +263,10 @@ MAILTO="your@email.com" # Your email to receive emails
 
 Great but what does `scrape_bicing.R` have?
 
-The script should do something along the lines of:
+The script should do something like the chunk below. Note that if you’re
+having trouble appending the data frame to the data base you might have
+to do what the answer in the SO forum suggests:
+<https://stackoverflow.com/questions/50745431/trying-to-use-r-with-mysql-the-used-command-is-not-allowed-with-this-mysql-vers?rq=1>
 
 ``` r
 # Load libraries
@@ -307,8 +329,7 @@ network).
 
 What does `sql_query.sh` have?
 
-A very simple SQL
-query:
+A very simple SQL query:
 
 ``` sql
 read PASS < pw.txt /* Read the password from a pw.txt file you create with your user pasword*/
