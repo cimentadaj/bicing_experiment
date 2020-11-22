@@ -187,7 +187,48 @@ That did it for me. Now I could connect to the database from R from my local com
 
 ## Scraping automatically with Airflow
 
+Pull a docker image with Airflow:
 
+```
+docker pull puckel/docker-airflow
+```
+
+then run the image with
+
+```
+docker run -d -p 8080:8080 bicing
+```
+
+You can even visit the DAG manager at http://ip_of_your_server:8080/admin/ where `ip_of_your_server` is the IP of your remote server.
+
+You need to mount the dags file as well as the entire repo with all scraping scripts.
+
+```
+# the path to an renv cache on the host machine
+RENV_PATHS_CACHE_HOST="/home/cimentadaj/.local/share/renv/cache/v5/R-4.0/x86_64-pc-linux-gnu"
+
+# the path to the cache within the container
+RENV_PATHS_CACHE_CONTAINER="/renv/cache"
+
+docker run -d \
+           -p 8080:8080 \
+           -v /home/cimentadaj/bicing_experiment/:/usr/local/bicing_experiment \
+           -v /home/cimentadaj/bicing_experiment/dag/:/usr/local/airflow/dags \
+           -e "RENV_PATHS_CACHE=${RENV_PATHS_CACHE_CONTAINER}" \
+           -v "${RENV_PATHS_CACHE_HOST}:${RENV_PATHS_CACHE_CONTAINER}" \
+           bicing
+
+docker run -d \
+           -p 8080:8080 \
+           -v /home/cimentadaj/bicing_experiment/:/usr/local/bicing_experiment \
+           -v /home/cimentadaj/bicing_experiment/dag/:/usr/local/airflow/dags \
+           bicing
+
+## THis is the tutorial I need to follow. It seems docker compose is what I should use to run airflow webserver, scheduler and the other.
+
+https://medium.com/@xnuinside/quick-guide-how-to-run-apache-airflow-cluster-in-docker-compose-615eb8abd67a
+
+```
 
 ## Scraping automatically
 

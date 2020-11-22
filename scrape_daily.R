@@ -1,10 +1,9 @@
 library(DBI)
 library(RMySQL)
 library(stringr)
-library(lubridate)
 
 ##### Grab raw bicing data ####
-source("bicing_functions.R")
+source("/usr/local/bicing_experiment/bicing_functions.R")
 
 bicing <- get_bicycles()
 
@@ -12,7 +11,7 @@ bicing <- get_bicycles()
 
 # pw.txt should be a txt file with only the password
 # Currently not in the repo but in the server and local computer
-pw <- readLines("pw.txt")
+pw <- readLines("/usr/local/bicing_experiment//pw.txt")
 
 ##### Connceting to database #####
 
@@ -20,9 +19,9 @@ print("-------------------------------------------------")
 print("Starting to connect to database")
 
 con <- DBI::dbConnect(RMySQL::MySQL(),
-                      host = "0.0.0.0",
+                      host = "165.22.201.250",
                       dbname = "bicing",
-                      user = "scraper",
+                      user = "cimentadaj",
                       password = pw)
 
 print("-------------------------------------------------")
