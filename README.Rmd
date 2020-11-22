@@ -8,7 +8,7 @@ output:
 
 This is a short tutorial on the steps I had to take to setup a database on my remote server and connect both from my local computer as well as from my server.
 
-This worked for my Digital Ocean droplet 512 MB and 20 GB disk with Ubuntu 2009.
+This worked for my Digital Ocean droplet 512 MB and 20 GB disk with Ubuntu 20.
 
 It's better to do *ALL* of this as a non-root user in your server but remember to append `sudo` to everything. Nonetheless, beware of problems like the ones I encountered. For example, when installing R packages that where ran by `cron` in a script, if installed through a non-root user the packages were said to be `'not installed'` (when I fact running the script separately was fine). However, when I installed the packages logged in as root the packages were installed successfully.
 
@@ -66,6 +66,8 @@ FLUSH PRIVILEGES;
 
 quit /* To quit MySQL*/
 ```
+
+* Allow access through MySQL's port with: `sudo ufw allow 3306`. If there's any troubleshooting with logging in, this article fixed my problems: https://www.digitalocean.com/community/tutorials/how-to-allow-remote-access-to-mysql
 
 * Test whether the access worked for both users
 
@@ -183,6 +185,10 @@ bike_stations <- dbReadTable(con, "bicing_stations")
 
 That did it for me. Now I could connect to the database from R from my local computer and from the server itself.
 
+## Scraping automatically with Airflow
+
+
+
 ## Scraping automatically
 
 So far you should have a database in your server which you can connect locally and remotely. I assume you have a working script that can actually add/retrieve information from the remote database. Here I will explain how to set up the scraping to run automatically as a `cron` job and get a final email with the summary of the scrape.
@@ -192,6 +198,7 @@ So far you should have a database in your server which you can connect locally a
 * Write `cron -e` logged in as your non-root user.
 
 * At the bottom of the interactive `cron` specify these options:
+
 ```{bash, eval = FALSE}
 SHELL=/bin/bash # the path to the predetermined program to run cron jobs. Default bash
 
@@ -221,7 +228,7 @@ MAILTO="your@email.com" # Your email to receive emails
 
 Great but what does `scrape_bicing.R` have?
 
-The script should do something along the lines of:
+The script should do something like the chunk below. Note that if you're having trouble appending the data frame to the data base you might have to do what the answer in the SO forum suggests: https://stackoverflow.com/questions/50745431/trying-to-use-r-with-mysql-the-used-command-is-not-allowed-with-this-mysql-vers?rq=1
 
 ```{r, eval = FALSE}
 # Load libraries
