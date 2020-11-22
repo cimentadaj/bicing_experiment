@@ -20,7 +20,7 @@ print("-------------------------------------------------")
 print("Starting to connect to database")
 
 con <- DBI::dbConnect(RMySQL::MySQL(),
-                      host = "178.62.233.233",
+                      host = "0.0.0.0",
                       dbname = "bicing",
                       user = "scraper",
                       password = pw)
@@ -56,7 +56,7 @@ dt_time <- ymd_hms(bicing$time)[1]
 
 query <- paste0(
 " SELECT *
-  FROM available_bikes
+  FROM bicing_stations
   WHERE MONTH(time) = ", month(dt_time), "
         AND DAY(time) = ", day(dt_time), "
         AND HOUR(time) = ", hour(dt_time), "
@@ -75,7 +75,7 @@ if (nrow(res) == 0) {
   print("-------------------------------------------------")
   print("The current date and time are not in the database. Appending results")
 
-  write_bicycle(con)
+  write_bicycle(con, bicing, field_types)
 
 } else {
 

@@ -33,12 +33,12 @@ get_resp <- function(url, attempts_left = 5, ...) {
   }
 }
 
-write_bicycle <- function(conn) {
+write_bicycle <- function(conn, bicing, field_types) {
   print("-------------------------------------------------")
   print("Attempting to write results to available_bikes")
 
   write_success <- DBI::dbWriteTable(conn = conn,
-                                     name = "available_bikes",
+                                     name = "bicing_stations",
                                      value = bicing,
                                      append = TRUE,
                                      row.names = FALSE,
@@ -46,7 +46,7 @@ write_bicycle <- function(conn) {
                                      field.types = field_types)
 
   print("-------------------------------------------------")
-  if (write_success) print("Successfully wrote to available_bikes") else print("Could not write to available_bikes") #nolintr
+  if (write_success) print("Successfully wrote to available_bikes") else print("Could not write to bicing_stations") #nolintr
 }
 
 get_bicycles <- function() {
