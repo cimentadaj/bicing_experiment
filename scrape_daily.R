@@ -85,7 +85,7 @@ if (nrow(res) == 0) {
   print(paste0("The current date and time are in the database. Deleting the date ", dt_time, " and appending new results"))
 
   delete_query <- paste0(
-  "DELETE FROM available_bikes
+  "DELETE FROM bicing_stations
    WHERE MONTH(time) = ", month(dt_time), "
          AND DAY(time) = ", day(dt_time), "
          AND HOUR(time) = ", hour(dt_time), "
@@ -107,5 +107,5 @@ print(warnings())
 
 
 dbDisconnect(con)
-########3
-#####
+########
+########
