@@ -1,6 +1,2 @@
-.Rproj.user
+data/
 .Rhistory
-.RData
-.Ruserdata
-scrape_log.txt
-pw.txt

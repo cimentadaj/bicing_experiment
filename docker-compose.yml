@@ -1,0 +1,15 @@
+
+version: "3.1"
+services:
+  db:
+    container_name: sql-bicing
+    image: mysql:8.0
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    volumes:
+      - /home/cimentadaj/bicing_experiment/sql:/docker-entrypoint-initdb.d
+      - /home/cimentadaj/bicing_experiment/data:/var/lib/mysql
+
