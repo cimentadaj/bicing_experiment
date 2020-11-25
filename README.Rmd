@@ -87,6 +87,8 @@ services:
 docker-compose up -d
 ```
 
+If you get some errors due to some port already in use this could be due to two reasons. Either you have another container redirecting to that port (use `docker ps` and `docker stop` to stop it) or you have a MySQL instance running locally already serving the port. You can stop it with `sudo service mysql stop`.
+
 And run this
 
 ```{bash}
