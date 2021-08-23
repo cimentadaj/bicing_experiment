@@ -8,7 +8,7 @@ output:
 
 Only requirement: install docker and docker-compose. Follow these tutorials: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04 and https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-20-04
 
-Create folder
+Create folder:
 
 ```{bash}
 mkdir ~/bicing_experiment
